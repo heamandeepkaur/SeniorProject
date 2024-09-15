@@ -1,0 +1,87 @@
+name: deployment
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+jobs:
+  createFile:
+    name: Create a file
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: 1arp/create-a-file-action@0.4.5
+        with:
+          path: 'SeniorProject/src/main/resources'
+          isAbsolutePath: false
+          file: 'application.properties'
+  build:
+    needs: createFile
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 
+        uses: actions/setup-java@v4.2.1
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      - name: Inject secrets into application.properties
+        run: |
+          echo "spring.mail.host=smtp.gmail.com" >> SeniorProject/src/main/resources/application.properties
+          echo "spring.mail.port=587" >> SeniorProject/src/main/resources/application.properties
+          echo "spring.mail.username=${{ secrets.EMAIL_USERNAME }}" >> SeniorProject/src/main/resources/application.properties
+          echo "spring.mail.password=${{ secrets.EMAIL_PASSWORD }}" >> SeniorProject/src/main/resources/application.properties
+          echo "spring.mail.properties.mail.smtp.auth=true" >> SeniorProject/src/main/resources/application.properties
+          echo "spring.mail.properties.mail.smtp.starttls.enable=true" >> SeniorProject/src/main/resources/application.properties
+          echo "spring.jpa.hibernate.ddl-auto=update" >> SeniorProject/src/main/resources/application.properties
+          echo "spring.datasource.url=${{ secrets.DB_URL }}" >> SeniorProject/src/main/resources/application.properties
+          echo "spring.datasource.username=${{ secrets.DB_USERNAME }}" >> SeniorProject/src/main/resources/application.properties
+          echo "spring.datasource.password=${{ secrets.DB_PASSWORD }}" >> SeniorProject/src/main/resources/application.properties
+          echo "spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver" >> SeniorProject/src/main/resources/application.properties
+          echo "sspring.jpa.show-sql: false" >> SeniorProject/src/main/resources/application.properties
+          echo "security.jwt.secret-key=${{ secrets.JWT_KEY }}" >> SeniorProject/src/main/resources/application.properties
+          echo "security.jwt.expiration-time=${{ secrets.JWT_EXPIRATION_TIME }}" >> SeniorProject/src/main/resources/application.properties
+          echo "server.port=5000" >> SeniorProject/src/main/resources/application.properties
+          echo "aws.accessKeyId=${{ secrets.AWS_ACCESS_KEY_ID }}" >> SeniorProject/src/main/resources/application.properties
+          echo "aws.secretKey=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> SeniorProject/src/main/resources/application.properties
+          echo "spring.servlet.multipart.max-file-size=50MB" >> SeniorProject/src/main/resources/application.properties
+          echo "spring.servlet.multipart.max-request-size=50MB" >> SeniorProject/src/main/resources/application.properties
+          cat SeniorProject/src/main/resources/application.properties
+      
+      - name: Configure AWS CLI
+        run: |
+          aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws configure set default.region us-west-1
+      - name: Navigate to app folder, clean and package Maven build
+        run: |
+          cd SeniorProject
+          mvn clean package -Dmaven.test.skip
+          jar tf target/SeniorProject-0.0.1-SNAPSHOT.jar
+          cp target/SeniorProject-0.0.1-SNAPSHOT.jar .
+          zip -r app-new.zip .platform/ .ebextensions/ SeniorProject-0.0.1-SNAPSHOT.jar
+      - name: Upload ZIP to S3
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          cd SeniorProject
+          aws s3 cp app-new.zip s3://luxpartyrentsresources/
+  deploy:
+    needs: build
+    name: Deploy
+    runs-on: ubuntu-latest
+    steps:
+     - name: Deploy to EB
+       env:
+         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+         AWS_REGION: 'us-west-1'
+       run: |
+         aws elasticbeanstalk create-application-version --application-name "luxpartyrent" \
+          --version-label ${{ github.sha }} --source-bundle S3Bucket="luxpartyrentsresources",S3Key="app-new.zip"
+          aws elasticbeanstalk update-environment --environment-name "Luxpartyrent-env" \
+          --version-label ${{ github.sha }}
