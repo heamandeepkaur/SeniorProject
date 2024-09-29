@@ -8,6 +8,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </head>
+<div id="notification-container" class="notification-container"></div>
+    </div>
 <body class="d-flex h-100 w-100 text-center text-bg-dark">
     <div class="cover-container w-100 h-100 p-3">
         <header class="py-3 border-bottom">
@@ -105,13 +107,23 @@
                             </div>
                             <div class="dropdown-content">
                                 <button id="openModalButton" onclick="openModal()">
-                                    <img src="https://d3snlw7xiuobl9.cloudfront.net/${product.location}.jpg" class="rounded" alt="Error" width="500" height="500">
+
+                                    <img src="https://d3snlw7xiuobl9.cloudfront.net/${product.location}.jpg" class="rounded" alt="Error" width=500" height="500">
+
                                 </button>
                                 <div class="product-info">
                                     <div class="itemdesc">${product.name}</div>
                                     <div class="itemdesc">${product.description}</div>
                                     <div class="itemdesc">$${product.price.toFixed(2)} USD</div>
                                     <div class="itemdesc">Quantity: ${product.quantity}</div>
+                                    <div class="quantity-controls">
+                                        <button class="custom-btn rounded" onclick="decreaseQuantity(this)">-</button>
+                                        <input type="text" value="1">
+                                        <button class="custom-btn rounded" onclick="increaseQuantity(this)">+</button>
+                                        <button class="custom-cart rounded cart-button" onclick="addToCart('${product.name}', ${product.price.toFixed(2)}, this)">
+                                            <img src="picture/cart.png" alt="Cart Icon">
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -127,6 +139,90 @@
                 console.error('Error fetching products:', error);
             }
         }
+
+        function increaseQuantity(button) {
+            const input = button.previousElementSibling;
+            let value = parseInt(input.value);
+            if (!isNaN(value)) {
+                input.value = value + 1;
+            }
+        }
+
+        function decreaseQuantity(button) {
+            const input = button.nextElementSibling;
+            let value = parseInt(input.value);
+            if (!isNaN(value) && value > 1) {
+                input.value = value - 1;
+            }
+        }
+
+        function showNotification(message) {
+    const notificationContainer = document.getElementById('notification-container');
+    const notification = document.createElement('div');
+    notification.className = 'notification';
+    notification.innerText = message;
+
+    notificationContainer.appendChild(notification);
+
+    // Automatically remove the notification after 3 seconds
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+
+function setCookie(name, value, days, sameSite = 'Lax') {
+    const expires = new Date(Date.now() + days * 864e5).toUTCString();
+    document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/`;
+}
+
+function getCookie(name) {
+    return document.cookie.split('; ').reduce((prev, current) => {
+        const [cookieName, cookieValue] = current.split('=');
+        return cookieName === name ? decodeURIComponent(cookieValue) : prev;
+    }, null);
+}
+
+function addToCart(productName, productPrice, button) {
+    const quantityInput = button.parentElement.querySelector('input[type="text"]');
+    const quantity = parseInt(quantityInput.value);
+
+    if (isNaN(quantity) || quantity < 1) {
+        showNotification("Please enter a valid quantity.");
+        return;
+    }
+
+    const product = {
+        name: productName,
+        price: productPrice,
+        quantity: quantity
+    };
+
+    // Retrieve existing cart from cookies or create a new array
+    let cart = JSON.parse(getCookie('cart') || '[]');
+
+    const existingProductIndex = cart.findIndex(item => item.name === productName);
+
+    if (existingProductIndex !== -1) {
+        cart[existingProductIndex].quantity = quantity;
+    } else {
+        cart.push(product);
+    }
+
+    // Set updated cart in cookies
+    setCookie('cart', JSON.stringify(cart), 7, "Lax"); // Cookie expires in 7 days
+
+    // Notify the user which product was added
+    if (quantity == 1) {
+        showNotification(`Added ${quantity} ${productName} to the cart!`);
+    } else {
+        showNotification(`Added ${quantity} ${productName}s to the cart!`);
+    }
+}
+
+// Event listener for DOM content loaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Other initialization code can go here
+});
 
         function loadNextPage() {
             currentPage++;

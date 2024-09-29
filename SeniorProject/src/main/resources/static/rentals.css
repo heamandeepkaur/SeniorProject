@@ -263,3 +263,103 @@ cursor: pointer;
 background-color: #e0e0e0;
 cursor: not-allowed;
 }
+
+.quantity-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 10px;
+}
+.quantity-controls input {
+  width: 50px;
+  text-align: center;
+  margin: 0 5px;
+  background-color: #a8a8a8; /* Dark grey background */
+  color: white; /* White text color for better readability */
+}
+
+.quantity-controls input[type="text"]:focus {
+  outline: none; /* Remove the default blue outline */
+  border: 1px solid #ffffff; /* Set a custom border color on focus */
+}
+
+.cart-button {
+  margin-left: 10px;
+  background-color: #343a40; /* Dark grey background */
+  border: 2px solid #ccc;
+  border-radius: 5px;
+  padding: 5px;
+}
+
+.cart-button img {
+  width: 40px;
+  height: 40px;
+  border:none;
+  opacity: 1; /* Transparent white */
+}
+
+.custom-btn {
+  background-color: #343a40; /* Dark grey background */
+  color: white; /* White text */
+  width: 35px;
+  padding: 5px 10px; /* Padding */
+  margin: 0 5px; /* Margin */
+}
+
+.custom-cart {
+  background-color: #343a40; /* Dark grey background */
+  color: white; /* White text */
+ 
+  padding: 5px 10px; /* Padding */
+  margin: 0 5px; /* Margin */
+}
+
+.custom-btn:hover {
+  background-color: #495057; /* Slightly lighter grey on hover */
+}
+
+.custom-cart:hover {
+  background-color: #495057; /* Slightly lighter grey on hover */
+}
+
+/* Notification Styles */
+.notification-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.notification {
+  background-color: #4caf50;
+  color: white;
+  padding: 15px;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  animation: fadeIn 0.5s, fadeOut 1s 2.5s;
+}
+
+@keyframes fadeIn {
+  from {
+      opacity: 0;
+      transform: translateY(-20px);
+  }
+  to {
+      opacity: 1;
+      transform: translateY(0);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+      opacity: 1;
+      transform: translateY(0);
+  }
+  to {
+      opacity: 0;
+      transform: translateY(-20px);
+  }
+}
