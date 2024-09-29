@@ -11,6 +11,7 @@ import java.io.IOException;
 
 import org.springframework.beans.factory.annotation.*;
 import org.springframework.http.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.bcrypt.*;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,43 +27,9 @@ public class CustomerController
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
     
     private final ObjectMapper mapper = new ObjectMapper();
-   
-    @PostMapping("/login")
-    public ResponseEntity<?> Login(@RequestBody AccountInfo accountInfo)
-    {
-        String email = accountInfo.getEmail();
-        String password = accountInfo.getPassword();
-        if(passwordEncoder.matches(password, accountRepository.findAccountByEmail(email).getPassword()))
-        {
-            return ResponseEntity.status(HttpStatus.OK).build();
-        }
-        else
-        {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-    }
-    @PostMapping("/signup")
-    public ResponseEntity<?> signup(@RequestBody CustomerAccountWrapper customerAccountWrapper)
-    {
-        String email = customerAccountWrapper.getEmail();
-        if (accountRepository.findAccountByEmail(email) != null )
-        {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("An account associate with this email address already existed.");
-        }
-        if(customerRepository.findAccountByCustomerName(customerAccountWrapper.getFirstName(), customerAccountWrapper.getLastName()) != null)
-        {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("AN account that is associate with your name already existed. please login instead. if you are trying to recreate n account please delete for current account first.");
-        }
-        Account account = customerAccountWrapper.getAccount();
-        Customer customer = customerAccountWrapper.getCustomer();
-        String hashedPassword = passwordEncoder.encode(customerAccountWrapper.getPassword());
-        account.setPassword(hashedPassword);
-        this.accountRepository.save(account);
-        customer.setAccount(account);
-        this.customerRepository.save(customer);
-        return ResponseEntity.status(HttpStatus.OK).body("User created successfully. We send a verification email to the email account you entered. Please follow the email's instruction to verify your email.Unverified account and customer profile will be deleted by the end of account's creation day");
-    }
+
     @PostMapping("/findAccount")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> checkIfAccountExist(@RequestParam("email") String email)
     {
         Account account = accountRepository.findAccountByEmail(email);
@@ -77,11 +44,13 @@ public class CustomerController
     }
 
     @GetMapping("/getCustomer/{id}")
-    public @ResponseBody Iterable<Customer> getUserById(@PathVariable int id) {
+    @PreAuthorize("isAuthenticated()")
+    public @ResponseBody Customer getUserById(@PathVariable int id) {
         return customerRepository.getCustomerById(id);
     }
 
     @PutMapping("/updateCustomer")
+    @PreAuthorize("isAuthenticated()")
     public @ResponseBody ResponseEntity<?> updateCustomer(@RequestBody Customer customer)
     {
         try
@@ -143,6 +112,7 @@ public class CustomerController
     }
 
     @DeleteMapping("/deleteCustomer/{id}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> deleteCustomer(@PathVariable int id) { 
         Account account=accountRepository.getReferenceById(id);
         if (account!=null) {  
@@ -152,12 +122,6 @@ public class CustomerController
 
         customerRepository.deleteById(id);
         return ResponseEntity.ok("Customer has been successfully deleted");
-    }
-    private void createCustomer(Customer customer, Account account)
-    {
-        this.accountRepository.save(account);
-        customer.setAccount(account);
-        this.customerRepository.save(customer);
     }
 
 }

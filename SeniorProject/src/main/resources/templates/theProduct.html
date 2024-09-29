@@ -5,6 +5,7 @@
     integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
     crossorigin="anonymous"></script>
 <link rel="stylesheet" type="text/css" href="newProduct.css">
+<script src="theProduct.js"></script>
 </head>
 
 <body>
@@ -22,27 +23,31 @@
             </div>
             <script src="imageScript.js"></script>
             <div id="form">
-                <form action="" id="contactForm" method="post">
+                <form id="updateForm" method="post" onsubmit="return false;"> <!-- Prevent default submission -->
+                    <input type="hidden" name="id" class="id" />
+
                     <span>Name</span>
-                    <input type="text" name="name" class="name" placeholder="Name of Product" tabindex=1 />
+                    <input type="text" name="name" class="name" placeholder="Name of Product" tabindex="1" />
 
                     <span>Quantity</span>
-                    <input type="text" name="quantity" class="quantity" placeholder="NUmber of items" tabindex=2 />
+                    <input type="text" name="quantity" class="quantity" placeholder="Number of items" tabindex="2" />
 
                     <span>Price</span>
-                    <input type="text" name="price" class="price" placeholder="Price of each item" tabindex=3 />
+                    <input type="text" name="price" class="price" placeholder="Price of each item" tabindex="3" />
 
                     <span>Type</span>
-                    <input type="text" name="type" class="type" placeholder="The type of item" tabindex=4 />
+                    <input type="text" name="type" class="type" placeholder="The type of item" tabindex="4" />
 
                     <span>Description</span>
-                    <textarea class="description" placeholder="Enter a simple discription of product"
-                        tabindex=5></textarea>
+                    <textarea name="description" class="description" placeholder="Enter a simple description of product" tabindex="5"></textarea>
 
-                    <input type="submit" name="edit" value="Edit" class="edit" tabindex=6>
+                    <input type="button" name="edit" value="Edit" onclick="updateProduct()" class="edit" tabindex="6" />
 
-                    <input type="submit" name="back" value="Back" class="back" tabindex=6>
+                    <input type="button" name="delete" value="Delete" onclick="deleteProduct()" class="delete" tabindex="7" />
+
+                    <input type="button" name="back" value="Back" onclick="window.location.href='/products'" class="back" tabindex="8" />
                 </form>
             </div>
+        </div>
     </section>
 </body>

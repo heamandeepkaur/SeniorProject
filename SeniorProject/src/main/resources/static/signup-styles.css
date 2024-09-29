@@ -1,7 +1,7 @@
 body{
     height: 100%;
     margin: 0;
-    background: url(picture/rose.jpg) no-repeat center center fixed;
+    background: url("https://d3snlw7xiuobl9.cloudfront.net/rose.jpg") no-repeat center center fixed;
     background-size: cover;
     padding-bottom: 60px;
     box-sizing: border-box;

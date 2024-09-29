@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Potapov Weddings Rental</title>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-aFq/bzH65dt+w6FI2ooMVUpc+21e0SRygnTpmBvdBgSdnuTN7QbdgL+OapgHtvPp" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"></script>
+</head>
+
+<body class="bg-transparent container-fluid">
+    <div th:replace="~{Navbar :: header}"></div>
+    <div th:replace="~{Navbar :: navbar}"></div>
+    
+    <div class="container-fluid">
+        <div class="row align-items-start">
+            <div id="shoppingCol" class="col-8 text-white">
+                <div id="cartEmpty" class="col-12 bg-dark py-5 rounded-3 d-none">
+                    <div class="container-fluid">
+                        <h3>Your cart is empty!</h3>
+                        <p>This is the part of the description where I tell you to go back to our <a href="/rental">rentals</a> tab and add stuff to your cart</p>
+                    </div>
+                </div>
+                <!-- template -->
+                <div id="cartItemCard" class="container-fluid bg-dark py-4 mb-2 rounded-3 d-none">
+                    <div class="row">
+                        <div class="col-3">
+                            <img id="itemImage" class="img-fluid rounded" src="https://d3snlw7xiuobl9.cloudfront.net/flowervase.jpg" alt="Flowervase">
+                        </div>
+                        <div class="col-6 text-start">
+                            <h3 id="itemName">Flowervase</h3>
+                            <p id="itemDescription">This is the description of the item that you have in your cart!</p>
+                            <div class="container-fluid row">
+                                <input id="itemAmountInput" class="col-2 rounded-3" type="text" placeholder="Amt" aria-label="Amt" value="1">
+                                <div class="col-10">
+                                    <button type="button" class="btn btn-outline-danger deleteButton">Delete</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-3 text-end">
+                            <h5 id="itemCost">$24.99</h5>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+            <div id="totalCol" class="col-4 container-fluid text-white bg-secondary rounded-3 p-3">
+                <div class="container-fluid bg-secondary text-center">
+                    <div id="totalItemCount" class="fw-bolder">Your Cart (0)</div>
+                    <hr>
+                    <div id="itemCardContainer" class="container-fluid">
+                        <div id="totalEmpty" class="d-none">Empty</div>
+                        <!-- template -->
+                        <div id="totalItemCard" class="container-fluid p-2 m-1 bg-dark bg-opacity-50 rounded-3 d-none">
+                            <div class="row">
+                                <div id="itemAmount" class="col-3 text-start">x1</div>
+                                <div id="itemName" class="col-6">Flowervase</div>
+                                <div id="itemCost" class="col-3 text-end">$24.99</div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <hr class="" style="border: 3px solid black;">
+                    <div class="row">
+                        <div class="col-6 text-start fw-bold">Total:</div>
+                        <div id="completeTotal" class="col-6 text-end fw-bold">$0.00</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button id="addButton" type="button" class="btn btn-outline-secondary" >Add</button>
+    </div>
+
+    <script src="search.js" charset="UTF-8" type="text/javascript"></script>  
+    <script src="shoppingCart.js" charset="UTF-8" type="text/javascript"></script>  
+</body>
+
+</html>

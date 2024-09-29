@@ -62,6 +62,8 @@ public class passwordController
         Account account = accountRepository.findAccountByEmail(accountInfo.getEmail());
         String newPassword = passwordEncoder.encode(accountInfo.getPassword());
         account.setPassword(newPassword);
+        account.setFailedLoginAttempt(0);
+        account.setIsLocked(false);
         accountRepository.save(account);
         return ResponseEntity.status(HttpStatus.OK).build();
     }

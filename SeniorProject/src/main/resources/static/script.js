@@ -3,11 +3,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Simulate fetching gallery images
     const gallerySection = document.querySelector('.gallery');
     const images = [
-        'picture/Image1.jpg',
-        'picture/Image2.jpg',
-        'picture/Image3.jpg',
-        'picture/Image4.jpg',
-        'picture/Image5.jpg',
+        'https://d3snlw7xiuobl9.cloudfront.net/Image1.jpg',
+        'https://d3snlw7xiuobl9.cloudfront.net/Image2.jpg',
+        'https://d3snlw7xiuobl9.cloudfront.net/Image3.jpg',
+        'https://d3snlw7xiuobl9.cloudfront.net/Image4.jpg',
+        'https://d3snlw7xiuobl9.cloudfront.net/Image5.jpg',
     
         // Add as many paths as needed
     ];

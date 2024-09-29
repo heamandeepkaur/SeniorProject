@@ -6,6 +6,8 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.jpa.repository.Modifying;
 
+import java.util.List;
+
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Integer> {
 
@@ -18,4 +20,8 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
         @Modifying
         @Query("DELETE FROM Order o WHERE o.id = ?1")
         void deleteById(int id);
+
+		List<Order> findOrderByCustomerId(int customerId);
 }
+
+

@@ -1,5 +1,5 @@
 html { 
-  background: url(picture/rose.jpg) no-repeat center center fixed;
+  background: url("https://d3snlw7xiuobl9.cloudfront.net/rose.jpg") no-repeat center center fixed;
   background-size: cover;
 }
 
@@ -51,4 +51,10 @@ color:white !important;
 
 .table tbody tr:hover{
 color:#ababab;
+}
+
+.middle h2{
+    color: white;
+    text-align: center;
+    font-size: 35px;
 }

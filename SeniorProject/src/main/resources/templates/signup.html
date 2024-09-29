@@ -75,7 +75,7 @@
                 let reEnteredPassword = document.getElementById("confirmPassword").value
                 if (password !== reEnteredPassword) {
                     document.getElementById('error').innerText = "Passwords do not match";
-                    console.log("password don't matched")
+                    console.log("password doesn't match")
                     return false;
                 }
                 let email = document.getElementById("email").value;
@@ -89,45 +89,59 @@
                 return true;
             }
             else {
-                console.log("password did not passed password requirement check")
+                console.log("password did not pass password requirement check")
                 document.getElementById("error").innerText = "password doesn't meet the password requirement"
                 return false;
             }
         }
 
-        document.getElementById('signup-form').addEventListener('submit', function (event) {
-            event.preventDefault();
-            if (checkPasswordAndEmail()) {
-                document.getElementById('error').innerText = "";
-                event.preventDefault();
-                fetch('/customer/signup',
-                    {
-                        method: 'POST',
-                        headers:
-                        {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(Object.fromEntries(new FormData(event.target)))
+       document.getElementById('signup-form').addEventListener('submit', function (event) {
+        event.preventDefault();
+
+        if (checkPasswordAndEmail()) {
+            document.getElementById('error').innerText="";
+            const formData = Object.fromEntries(new FormData(event.target));
+            fetch('/auth/signup', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body:JSON.stringify(Object.fromEntries(new FormData(event.target)))
+            })
+            .then(response => {
+                const status = response.status; // HTTP status code
+                return response.text().then(body => ({ status, body }));
+            })
+            .then(({ status, body }) => {
+                console.log('Status:', status);
+                console.log('Body:', body);
+                if (status === 200) {
+                    const email = formData.email; // Extract the email from the form data
+                    // Now, send the verification email
+                    fetch(`/email/sendVerificationEmail?email=${encodeURIComponent(email)}`, {
+                        method: 'POST'
                     })
-                    .then(response => {
-                        const status = response.status; // HTTP status code
-                        return response.text().then(body => ({ status, body }));
-                    })
-                    .then(({ status, body }) => {
-                        console.log('Status:', status);
-                        console.log('Body:', body);
-                        if (status === 200) {
+                    .then(verificationResponse => {
+                        if (verificationResponse.ok) {
+                            // Redirect to displayInfo page
                             window.location.href = "/displayInfo?message=" + encodeURIComponent(body);
-                        }
-                        else {
-                            error.innerText = body;
+                        } else {
+                            document.getElementById('error').innerText = "Failed to send verification email.";
                         }
                     })
                     .catch(error => {
                         console.error('Error:', error);
+                        document.getElementById('error').innerText = "An error occurred while sending the verification email.";
                     });
-            }
-        });
+                } else {
+                    document.getElementById('error').innerText = body;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    });
     </script>
 </body>
 </html>

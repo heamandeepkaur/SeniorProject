@@ -1,5 +1,5 @@
 html {
-  background: url(picture/rose.jpg) no-repeat center fixed;
+  background: url("https://d3snlw7xiuobl9.cloudfront.net/rose.jpg") no-repeat center fixed;
   background-size: cover;
 }
 

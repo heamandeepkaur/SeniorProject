@@ -54,7 +54,8 @@
                     </div>
                     <div class="col-3 d-flex justify-content-end align-items-center" style="padding-right:2%;">
                         <a id="loginButton" class="btn btn-outline-light mx-2" href="/login">Login</a>
-                        <a id="signUpButton" class="btn btn-outline-light" href="/signUp">Sign up</a>
+                        <a id="signUpButton" class="btn btn-outline-light mx-2" href="/signup">Sign up</a>
+                        <a id="shoppingCartButton" class="btn btn-outline-light mx-2" href="/shoppingCart">Cart</a>
                     </div>
                 </div>
                 <div class="container d-flex flex-wrap justify-content-center">
@@ -83,6 +84,7 @@
                     {
                         document.getElementById("loginButton").style.display = "none";
                         document.getElementById("signUpButton").style.display = "none";
+                        document.getElementById("shoppingCartButton").style.display = "none";
                         document.getElementById("other-page-form").remove();
                     }
                 });

@@ -3,7 +3,8 @@ package com.example.SeniorProject.Model;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-import javax.validation.constraints.*;
+
+import javax.validation.constraints.NotNull;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -12,7 +13,6 @@ import java.util.Set;
 public class Order {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "order_id")
     private int id;
 
@@ -41,21 +41,26 @@ public class Order {
     @JsonBackReference
     private Customer customer;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH})
-    @JoinTable(name = "order_product", joinColumns = @JoinColumn(name = "order_id"), inverseJoinColumns = @JoinColumn(name = "product_id"))
-    private Set<Product> products = new HashSet<>();
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private Set<OrderProduct> orderProducts = new HashSet<>();
 
-    public Order(String date, int rentalTime, boolean paid, String status, double price, Customer customer) {
+    public Order(String date, int rentalTime, boolean paid, String status) {
         this.date = date;
         this.rentalTime = rentalTime;
         this.paid = paid;
         this.status = status;
-        this.price = price;
-        this.customer = customer;
     }
 
     public Order() {
         // Default constructor
+    }
+
+    // Add product to the order with quantity
+    public void addProduct(Product product, int quantity) {
+        OrderProduct orderProduct = new OrderProduct(this, product, quantity);
+        orderProducts.add(orderProduct);
+        product.getOrderProducts().add(orderProduct); // Associate product with the order
     }
 
     // Getters and Setters
@@ -115,11 +120,11 @@ public class Order {
         this.customer = customer;
     }
 
-    public Set<Product> getProducts() {
-        return products;
+    public Set<OrderProduct> getOrderProducts() {
+        return orderProducts;
     }
 
-    public void setProducts(Set<Product> products) {
-        this.products = products;
+    public void setOrderProducts(Set<OrderProduct> orderProducts) {
+        this.orderProducts = orderProducts;
     }
 }

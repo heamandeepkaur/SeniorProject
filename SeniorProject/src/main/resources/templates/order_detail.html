@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Detail</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-aFq/bzH65dt+w6FI2ooMVUpc+21e0SRygnTpmBvdBgSdnuTN7QbdgL+OapgHtvPp" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="orderDetail.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+            crossorigin="anonymous"></script>
+    <link rel="stylesheet" type="text/css" href="orderDetail.css">
+</head>
+
+<body class="container-fluid">
+<div th:replace="~{Navbar :: header}"></div>
+<div th:replace="~{Navbar :: navbar}"></div>
+<div id="container" class="bg-transparent">
+    <div class="row">
+        <div class="col-md-10 main-content">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="order-title">Order number #256984</div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="order-summary">
+                        <h5>Customer Details</h5>
+                        <p><strong>Name:</strong> Jonathan Smith</p>
+                        <p><strong>Email:</strong>1234@test.com</p>
+                        <p><strong>Phone Number:</strong> (123) 456-7899</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="order-summary">
+                        <h5>Order Summary</h5>
+                        <ul class="list-unstyled">
+                            <li><span>Current status:</span> confirmed</li>
+                            <li><span>Payment:</span><span> Card - 65482</span></li>
+                            <li><span>Subtotal:</span><span> $375.00</span></li>
+                            <li><span>Deposit:</span><span> -$500.00</span></li>
+                            <li class="total d-flex justify-content-between"><strong>Total</strong><strong>$370.00</strong></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <div class="item-summary">
+                        <h5>Item Summary</h5>
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Quantity</th>
+                                <th>Price</th>
+                                <th>Total</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                <td>
+                                    <img src="https://d3snlw7xiuobl9.cloudfront.net/test.jpg" alt="Fjallraven Backpack">
+                                    Fjallraven - Foldsack No. 1 Backpack, Fits 15 Laptops
+                                </td>
+                                <td>x1</td>
+                                <td>$109.95</td>
+                                <td>$109.95</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <img src="https://d3snlw7xiuobl9.cloudfront.net/test.jpg" alt="Fjallraven Backpack">
+                                    Fjallraven - Foldsack No. 1 Backpack, Fits 15 Laptops
+                                </td>
+                                <td>x1</td>
+                                <td>$109.95</td>
+                                <td>$109.95</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="button-group d-flex justify-content-center">
+                <button type="button" class="btn btn-outline-primary btn-lg mx-2">Change order status</button>
+                <button type="button" class="btn btn-outline-primary btn-lg mx-2">Cancel order</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', async() => {
+        try {
+            const urlParams = new URLSearchParams(window.location.search);
+            const id = urlParams.get("id");
+
+            const response = await fetch(`/order/getById?id=${id}`,{
+                method: 'GET',
+                headers:
+                    {
+                        "Content_type": "application/json",
+                        "Authorization": `Bearer ${localStorage.getItem('jwtToken')}`
+                    },
+            });
+            if (response.ok)
+            {
+                const data = await response.json();
+                console.log(data);
+            }
+        } catch (error) {
+            console.error('Error fetching order:', error);
+        }
+    });
+</script>
+</body>
+
+</html>

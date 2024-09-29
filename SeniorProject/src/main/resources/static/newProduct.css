@@ -7,7 +7,7 @@
 }
 
 html {
-  background: url(picture/rose.jpg) no-repeat center fixed;
+  background: url("https://d3snlw7xiuobl9.cloudfront.net/rose.jpg") no-repeat center fixed;
   background-size: cover;
 }
 
@@ -130,6 +130,18 @@ body {
     float: left;
     padding: 0px 0px 0px 5px;
     margin: 10px 0px 10px 16px;
+    background: #222222;
+    color: #F1F1F1;
+    font: 14px/16px'Bree Serif', Georgia, serif;
+}
+
+#contact #form input.delete {
+    cursor: pointer;
+    width: 85px;
+    height: 30px;
+    float: right;
+    padding: 0px 0px 5px 0px;
+    margin: 10px 10px 0px 0px;
     background: #222222;
     color: #F1F1F1;
     font: 14px/16px'Bree Serif', Georgia, serif;

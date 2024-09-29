@@ -1,70 +1,88 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Log in</title>
-    <link rel="stylesheet" type="text/css" href="login.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Log in</title>
+        <link rel="stylesheet" type="text/css" href="login.css">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-</head>
-<body>
-    <div th:replace="~{Navbar :: header}"></div>
-    <div th:repalce="~{Navbar :: navbar}"></div>
-    <div class="container mt-5">
-        <form id="myForm">
-            <h1>LOGIN</h1>
-            <label for="email">Email</label>
-            <input class="myinput" type="email" id="email" name="email" placeholder="Enter your Email" required>
-            <label for="password">Password</label>
-            <input class="myinput" type="password" id="password" name="password" placeholder="Enter your password">
-            <button type="submit" class="btn btn-primary">LOGIN</button>
-            <a class="link" href="/forgetPassword">Forget password?</a>
-            <a class="link" href="/signUp">New user? Sign up here</a>
-        </form>
-    </div>
-    <p id = "successMessage" style="display: none; color: white" >Success!!</p>
-    <P id = "errorMessage" style="display: none; color: white;">the password you entered is not correct</P>
-    <script>
-        document.getElementById('myForm').addEventListener('submit', function(event)
-        {
-            event.preventDefault();
-            const form = document.getElementById('myForm');
-            const formData = new FormData(form);
-            const formDataObj = {};
-            formData.forEach((value, key) => {
-                formDataObj[key] = value;
-            });
-            // Convert JavaScript object to JSON string
-            const jsonBody = JSON.stringify(formDataObj);
-            console.log(jsonBody);
-            fetch('/customer/login',
-                {
-                    method: 'POST',
-                    headers:
-                    {
-                        'Content-Type': 'application/json',
-                    },
-                    body: jsonBody
-                })
-            .then(function(response) 
-            {
-                if (response.status === 200)
-                {
-                    window.location.href = '/';
-                } 
-                else if(response.status === 401)
-                {
-                    document.getElementById('errorMessage').style.display = 'block';
-                    document.getElementById('successMessage').style.display = 'none';
-                    document.getElementById('password').value = '';
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
+    </head>
+    <body>
+        <div th:replace="~{Navbar :: header}"></div>
+        <div class="container mt-5">
+            <form id="myForm">
+                <h1>LOGIN</h1>
+                <label for="email">Email</label>
+                <input class="myinput" type="email" id="email" name="email" placeholder="Enter your Email" required>
+                <label for="password">Password</label>
+                <input class="myinput" type="password" id="password" name="password" placeholder="Enter your password">
+                <button type="submit" class="btn btn-primary">LOGIN</button>
+                <a class="link" href="/forgetPassword">Forget password?</a>
+                <a class="link" href="/signup">New user? Sign up here</a>
+            </form>
+            <p id="successMessage" style="display: none; color: white;">Success!!</p>
+            <p id="errorMessage" style="display: none; color: red;">The password you entered is not correct</p>
+            <p id="lockMessage" style="display: none; color: red;">Your account is locked due to multiple failed login attempts. <a href="/forgetPassword">Reset your password here.</a></p>
+        </div>
+
+        <script>
+            document.getElementById('myForm').addEventListener('submit', function (event) {
+                event.preventDefault();
+                const form = document.getElementById('myForm');
+                const formData = new FormData(form);
+                const formDataObj = {};
+                formData.forEach((value, key) => {
+                    formDataObj[key] = value;
                 });
-        });
-    </script>
-</body>
+                // Convert JavaScript object to JSON string
+                const jsonBody = JSON.stringify(formDataObj);
+                console.log(jsonBody);
+                fetch('/auth/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: jsonBody
+                    })
+                    .then(response =>
+                    {
+                        if (response.status === 200)
+                        {
+                            return response.json();
+                        }
+                        else if (response.status === 401)
+                        {
+                            document.getElementById('errorMessage').style.display = 'block';
+                            document.getElementById('successMessage').style.display = 'none';
+                            document.getElementById('password').value = '';
+                        }
+                        else if (response.status === 423)
+                        {
+                            document.getElementById('lockMessage').style.display = 'block';
+                            document.getElementById('errorMessage').style.display = 'none';
+                            document.getElementById('successMessage').style.display = 'none';
+                        }
+                    })
+                    .then(data =>
+                    {
+                        if (data && data.token)
+                        {
+                            localStorage.setItem("jwtToken", data.token);
+                            console.log(data.token);
+                            // Redirect or update UI
+                            window.location.href = '/';
+                            console.log("Login successful");
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+            });
+            document.getElementById('password').addEventListener('input', function () {
+                document.getElementById('errorMessage').style.display = 'none';
+            });
+        </script>
+    </body>
 </html>

@@ -5,6 +5,7 @@
     integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
     crossorigin="anonymous"></script>
 <link rel="stylesheet" type="text/css" href="newProduct.css">
+<script src="newProduct.js"></script>
 </head>
 
 <body>
@@ -22,7 +23,7 @@
             </div>
             <script src="imageScript.js"></script>
             <div id="form">
-                <form action="" id="contactForm" method="post">
+                <form action="" id="inventoryForm" method="post" onsubmit="return addProduct()">
                     <span>Name</span>
                     <input type="text" name="name" class="name" placeholder="Name of Product" tabindex=1 />
 
@@ -41,7 +42,7 @@
 
                     <input type="submit" name="submit" value="Add" class="submit" tabindex=6>
 
-                    <input type="submit" name="cancel" value="Cancel" class="cancel" tabindex=6>
+                    <input type="button" name="cancel" value="Cancel" class="cancel" onclick="window.location.href='/products'" tabindex="7">
                 </form>
             </div>
     </section>
