@@ -4,6 +4,7 @@ import com.example.SeniorProject.Service.S3Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,5 +28,11 @@ public class AwsController
 
         s3Service.uploadFile(file);
         return ResponseEntity.ok().body("Picture uploaded successfully.");
+    }
+
+	@GetMapping("/healthcheck")
+    public ResponseEntity<?> performHealthCheck()
+    {
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 }
