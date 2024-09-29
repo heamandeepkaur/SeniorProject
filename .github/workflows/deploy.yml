@@ -2,10 +2,7 @@ name: deployment
 on:
   push:
     branches:
-      - main
-  pull_request:
-    branches:
-      - main
+      - AWS_deployment
 jobs:
   createFile:
     name: Create a file
