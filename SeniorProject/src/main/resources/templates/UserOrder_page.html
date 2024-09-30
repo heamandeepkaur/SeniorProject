@@ -14,16 +14,30 @@
             integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
             crossorigin="anonymous"></script>
     <style>
-
+        .middle h2{
+            color: white;
+            text-align: center;
+            font-size: 35px;
+        }
+        button.active {
+            background-color: #007BFF;
+            color: white;
+        }
     </style>
 </head>
 
 <body class="bg-transparent">
     <div th:replace="~{Navbar :: header}"></div>
     <div th:replace="~{Navbar :: navbar}"></div>
+
     <div class="container">
         <section class="middle">
             <h2>Rentals</h2>
+    <!-- Toggle Buttons -->
+            <div class="d-flex justify-content-center">
+                <button id="toggleCurrentOrders" class="btn btn-primary mx-2">Show Current Orders</button>
+                <button id="togglePastOrders" class="btn btn-secondary mx-2">Show Past Orders</button>
+            </div>
         </section>
 
         <table class="table">
@@ -44,30 +58,27 @@
         </table>
     </div>
 <script>
-    // Function to load all orders (initial load)
-    async function loadOrders() {
+    // Function to load current orders
+    async function loadCurrentOrders() {
         try {
-            const response = await fetch('/order/getOrderByCustomerId?id=12345');
+            const response = await fetch('http://localhost:8080/order/currentOrders?customerId=1');
             const data = await response.json();
             renderOrders(data);
         } catch (error) {
-            console.error('Error fetching orders:', error);
+            console.error('Error fetching current orders:', error);
         }
     }
 
-    // Function to search orders by Customer ID
-    /*async function searchOrdersByCustomerId(event) {
-        event.preventDefault(); 
-        const customerId = document.getElementById('customer-id-input').value;
-        
+    // Function to load past orders
+    async function loadPastOrders() {
         try {
-            const response = await fetch(`/order/getOrderByCustomerId?id=${customerId}`);
+            const response = await fetch('http://localhost:8080/order/pastOrders?customerId=1');
             const data = await response.json();
             renderOrders(data);
         } catch (error) {
-            console.error('Error fetching orders by customer ID:', error);
+            console.error('Error fetching past orders:', error);
         }
-    }*/
+    }
 
     // Function to render orders in the table
     function renderOrders(orders) {
@@ -84,14 +95,26 @@
                 <td>${order.price}</td>
                 <td>${order.rentalTime}</td>
                 <td>${order.status}</td>
-              
             `;
             container.appendChild(orderRow);
         });
     }
 
-    // Initial load of all orders
-    loadOrders();
+    // Add active state toggling for buttons
+    document.getElementById('toggleCurrentOrders').addEventListener('click', () => {
+        loadCurrentOrders();
+        document.getElementById('toggleCurrentOrders').classList.add('active');
+        document.getElementById('togglePastOrders').classList.remove('active');
+    });
+
+    document.getElementById('togglePastOrders').addEventListener('click', () => {
+        loadPastOrders();
+        document.getElementById('togglePastOrders').classList.add('active');
+        document.getElementById('toggleCurrentOrders').classList.remove('active');
+    });
+
+    // Initial load of current orders
+    loadCurrentOrders();
 </script>
 </body>
 
