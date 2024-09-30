@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.constraints.Email;
 import java.util.HashMap;
 
 @RestController
@@ -81,6 +82,32 @@ public class EmailController
         // Sending the email
         return emailService.sendSimpleEmail(details);
     }
+
+
+
+
+
+
+    // User/CX Email notifications
+    private void sendCxPickupNotification ( Order order){
+        //setting the up the email
+        EmailDetails CxEmailDetails = new EmailDetails();
+        CxEmailDetails.setRecipient(order.getCustomer().getEmail());
+        CxEmailDetails.setSubject("Wedding Rental Pickup Reminder");
+
+        //filling the email body
+        String emailBody = "Thank you for coming to us for your rental needs!\n"
+                + "Here is an important reminder for your rental pickup.\n"
+                + order.getCustomer().getFirstName() + " "
+                + order.getCustomer().getLastName() + " your Order, "
+                + order.getID() + " pickup is on, " + order.getDate();
+
+        //sending email
+        CxEmailDetails.setMessageBody(emailBody);
+        emailService.sendSimpleEmail(CxEmailDetails);
+
+    }//Pickup
+    
 
     private String generateVerificationToken(String email) {
         // Generating a random verification token logic goes here
