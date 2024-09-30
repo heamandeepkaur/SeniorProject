@@ -107,7 +107,25 @@ public class EmailController
         emailService.sendSimpleEmail(CxEmailDetails);
 
     }//Pickup
-    
+
+    private void sendCxReturnNotification ( Order order){
+        //setting the up the email
+        EmailDetails CxEmailDetails = new EmailDetails();
+        CxEmailDetails.setRecipient(order.getCustomer().getEmail());
+        CxEmailDetails.setSubject("Wedding Rental Return Reminder");
+
+        //filling the email body
+        String emailBody = "I hope your special day was memory worthy!\n"
+                + "Below is important return information for your rental\n"
+                + order.getCustomer().getFirstName() + " "
+                + order.getCustomer().getLastName() + " your Order, "
+                + order.getID() + " return is on, " + order.getRentalTime();
+
+        //sending email
+        CxEmailDetails.setMessageBody(emailBody);
+        emailService.sendSimpleEmail(CxEmailDetails);
+
+    }//Return
 
     private String generateVerificationToken(String email) {
         // Generating a random verification token logic goes here
