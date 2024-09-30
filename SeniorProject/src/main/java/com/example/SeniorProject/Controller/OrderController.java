@@ -9,6 +9,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 
@@ -77,6 +78,65 @@ public class OrderController
         orderRepository.save(order);
         return ResponseEntity.status(HttpStatus.OK).body("Order created successfully.");
     }
+
+    // Cancel an order
+    @PutMapping("/cancel")
+    public ResponseEntity<String> cancelOrder(@RequestParam int orderId) {
+        try {
+
+            // Find the order by ID
+            Order order = orderRepository.findById(orderId).orElse(null);
+            if (order == null) {
+                return new ResponseEntity<>("Order not found", HttpStatus.NOT_FOUND);
+            }
+
+            // Check if the order is already cancelled
+            if ("cancelled".equals(order.getStatus())) {
+                return new ResponseEntity<>("Order is already cancelled", HttpStatus.BAD_REQUEST);
+            }
+
+            // Set the order status to 'cancelled'
+            order.setStatus("cancelled");
+
+            // Save the order with the updated status
+            orderRepository.save(order);
+
+            return new ResponseEntity<>("Order cancelled successfully", HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Error cancelling order", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    // Fetch current orders for a customer (status = 'active')
+    @GetMapping(path="/currentOrders")
+    public ResponseEntity<?> getCurrentOrders(@RequestParam int customerId) {
+        List<Order> currentOrders = orderRepository.findCurrentOrdersByCustomerId(customerId);
+            if (currentOrders.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No current orders found for the customer.");
+            }
+
+        List<OrderDTO> currentOrderDTOs = currentOrders.stream()
+            .map(this::mapToOrderDTO)
+            .collect(Collectors.toList());
+
+        return ResponseEntity.status(HttpStatus.OK).body(currentOrderDTOs);
+    }
+
+    // Fetch past orders for a customer (status = 'completed')
+    @GetMapping(path="/pastOrders")
+    public ResponseEntity<?> getPastOrders(@RequestParam int customerId) {
+         List<Order> pastOrders = orderRepository.findPastOrdersByCustomerId(customerId);
+            if (pastOrders.isEmpty()) {
+                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No past orders found for the customer.");
+            }
+
+        List<OrderDTO> pastOrderDTOs = pastOrders.stream()
+            .map(this::mapToOrderDTO)
+            .collect(Collectors.toList());
+
+        return ResponseEntity.status(HttpStatus.OK).body(pastOrderDTOs);
+    }
+
 
     // Read all orders with pagination
     @GetMapping(path="/getAll")
@@ -173,6 +233,7 @@ public class OrderController
     public ResponseEntity<?> getOrderByCustomerId(@RequestParam int id)
     {
         Customer customer = customerRepository.findById(id).orElse(null);
+
         if (customer == null)
         {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Customer not found");
