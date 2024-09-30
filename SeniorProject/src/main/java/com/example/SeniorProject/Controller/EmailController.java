@@ -127,6 +127,26 @@ public class EmailController
 
     }//Return
 
+    //Note that sendCxCanceledNotification requires a CanceledReason to be
+    //passed into the function for the email to be complete.
+    private void sendCxCanceledNotification ( String CanceledReason, Order order){
+        //setting the up the email
+        EmailDetails CxEmailDetails = new EmailDetails();
+        CxEmailDetails.setRecipient(order.getCustomer().getEmail());
+        CxEmailDetails.setSubject(" Important Wedding Rental Order Update");
+
+        //filling the email body
+        String emailBody = order.getCustomer().getFirstName() + " "
+                + order.getCustomer().getLastName() + " your Order, "
+                + order.getID() + " has been canceled for, " + CanceledReason
+                + "\n Please reach out to our service number for any questions.";
+
+        //sending email
+        CxEmailDetails.setMessageBody(emailBody);
+        emailService.sendSimpleEmail(CxEmailDetails);
+
+    }//Canceled
+
     private String generateVerificationToken(String email) {
         // Generating a random verification token logic goes here
         return passwordEncoder.encode(email);
