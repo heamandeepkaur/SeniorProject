@@ -55,17 +55,20 @@
                     <a class="nav-link" href="/about">About Us</a>
                   </li>
                 </ul>
-                <form class="d-flex" action="/rental">
-                  <input class="form-control me-2" type="search" name="kw" placeholder="Search Products" aria-label="Search" list="product-list" autocomplete="off" id="product-search">
-                  <datalist id="product-list">
-                    <option value="Black Dinner Plate"></option>
-                    <option value="Glass Cups"></option>
-                    <option value="Flower Vase"></option>
-                    <option value="Plastic Table"></option>
-                    <option value="Goblet"></option>
-                    <option value="Wine Cup"></option>
-                  </datalist>
-                  <button class="btn btn-outline-light item-search-btn" type="submit">Search</button>
+                <!-- Update the form within the nav element -->
+                <form class="d-flex" onsubmit="searchProducts(event)">
+                    <input class="form-control me-0" type="search" name="kw" placeholder="Search Products" aria-label="Search" list="product-list" autocomplete="off" id="product-search">
+                    <button class="btn btn-outline-light item-search-btn" type="submit">Search</button>
+                    
+                    <div class="dropdown ms-2"> <!-- Added margin-start to create a gap -->
+                        <select class="form-select wide-dropdown" id="type-dropdown" name="type" onchange="loadProductsByType()">
+                            <option value="">Select Type</option>
+                            <option value="Dinnerware">Dinnerware</option>
+                            <option value="Extra Stuff">Extra Stuff</option>
+                            <option value="Tool">Tool</option>
+                            <!-- Add more options as needed -->
+                        </select>
+                    </div>
                 </form>
               </div>
             </div>
@@ -86,59 +89,67 @@
         let currentPage = 0;
         const pageSize = 12; // Number of products per page
 
-        async function loadProducts(page) {
-            try {
-                const response = await fetch(`/rental/getAll?page=${page}&size=${pageSize}`);
-                const data = await response.json();
+        async function loadProducts(page, searchTerm = '') {
+    try {
+        const response = await fetch(`/rental/getAll?page=${page}&size=${pageSize}&kw=${encodeURIComponent(searchTerm)}`);
+        const data = await response.json();
 
-                const container = document.getElementById('product-container');
-                container.innerHTML = ''; // Clear previous products
+        const container = document.getElementById('product-container');
+        container.innerHTML = ''; // Clear previous products
 
-                // Append products to container
-                data.content.forEach(product => {
-                    const productDiv = document.createElement('div');
-                    productDiv.className = 'col-md-3 item-frame';
-                    productDiv.innerHTML = `
-                        <div class="dropdown">
-                            <img src="https://d3snlw7xiuobl9.cloudfront.net/${product.location}.jpg" class="rounded" alt="Error" width=450" height="450">
-                            <div class="item-name">
+        if (data.content && Array.isArray(data.content)) {
+            // Append products to container
+            data.content.forEach(product => {
+                const productDiv = document.createElement('div');
+                productDiv.className = 'col-md-3 item-frame';
+                productDiv.innerHTML = `
+                    <div class="dropdown">
+                        <img src="https://d3snlw7xiuobl9.cloudfront.net/${product.location}.jpg" class="rounded" alt="Error" width="450" height="450">
+                        <div class="item-name">
+                            <div class="itemdesc">${product.name}</div>
+                            <div class="itemdesc">$${product.price.toFixed(2)} USD</div>
+                        </div>
+                        <div class="dropdown-content">
+                            <button id="openModalButton" onclick="openModal()">
+                                <img src="https://d3snlw7xiuobl9.cloudfront.net/${product.location}.jpg" class="rounded" alt="Error" width="500" height="500">
+                            </button>
+                            <div class="product-info">
                                 <div class="itemdesc">${product.name}</div>
+                                <div class="itemdesc">${product.description}</div>
                                 <div class="itemdesc">$${product.price.toFixed(2)} USD</div>
-                            </div>
-                            <div class="dropdown-content">
-                                <button id="openModalButton" onclick="openModal()">
-
-                                    <img src="https://d3snlw7xiuobl9.cloudfront.net/${product.location}.jpg" class="rounded" alt="Error" width=500" height="500">
-
-                                </button>
-                                <div class="product-info">
-                                    <div class="itemdesc">${product.name}</div>
-                                    <div class="itemdesc">${product.description}</div>
-                                    <div class="itemdesc">$${product.price.toFixed(2)} USD</div>
-                                    <div class="itemdesc">Quantity: ${product.quantity}</div>
-                                    <div class="quantity-controls">
-                                        <button class="custom-btn rounded" onclick="decreaseQuantity(this)">-</button>
-                                        <input type="text" value="1">
-                                        <button class="custom-btn rounded" onclick="increaseQuantity(this)">+</button>
-                                        <button class="custom-cart rounded cart-button" onclick="addToCart('${product.name}', ${product.price.toFixed(2)}, this)">
-                                            <img src="picture/cart.png" alt="Cart Icon">
-                                        </button>
-                                    </div>
+                                <div class="itemdesc">Quantity: ${product.quantity}</div>
+                                <div class="quantity-controls">
+                                    <button class="custom-btn rounded" onclick="decreaseQuantity(this)">-</button>
+                                    <input type="text" value="1">
+                                    <button class="custom-btn rounded" onclick="increaseQuantity(this)">+</button>
+                                    <button class="custom-cart rounded cart-button" onclick="addToCart('${product.name}', ${product.price.toFixed(2)}, this)">
+                                        <img src="picture/cart.png" alt="Cart Icon">
+                                    </button>
                                 </div>
                             </div>
                         </div>
-                    `;
-                    container.appendChild(productDiv);
-                });
-
-                // Enable/disable buttons based on the current page
-                document.getElementById('prev-button').disabled = (currentPage === 0);
-                document.getElementById('next-button').disabled = data.last;
-
-            } catch (error) {
-                console.error('Error fetching products:', error);
-            }
+                    </div>
+                `;
+                container.appendChild(productDiv);
+            });
+        } else {
+            console.error("Data format error: expected data.content to be an array");
         }
+
+        // Enable/disable buttons based on the current page
+        document.getElementById('prev-button').disabled = (currentPage === 0);
+        document.getElementById('next-button').disabled = data.last;
+
+    } catch (error) {
+        console.error('Error fetching products:', error);
+    }
+}
+
+// Modify the event listener for form submission
+document.querySelector('form').addEventListener('submit', function(event) {
+    event.preventDefault(); // Prevent the default form submission
+    searchProducts(); // Call the search function
+});
 
         function increaseQuantity(button) {
             const input = button.previousElementSibling;
@@ -219,6 +230,77 @@ function addToCart(productName, productPrice, button) {
     }
 }
 
+async function searchProducts(event) {
+    event.preventDefault(); // Prevent the default form submission
+
+    const searchTerm = document.getElementById('product-search').value;
+    currentPage = 0; // Reset to the first page for search results
+    await loadProducts(currentPage, searchTerm); // Load products based on the search term
+}
+
+function searchByType() {
+    const selectedType = document.getElementById('type-dropdown').value;
+    const keyword = document.getElementById('product-search').value;
+    
+    // Make a fetch request to your server
+    fetch(`/rental/getAll?type=${selectedType}&kw=${keyword}`)
+        .then(response => response.json())
+        .then(data => {
+            // Handle displaying the data (update product container)
+            const container = document.getElementById('product-container');
+            container.innerHTML = ''; // Clear previous products
+
+            // Append products to container
+            data.content.forEach(product => {
+                const productDiv = document.createElement('div');
+                productDiv.className = 'col-md-3 item-frame';
+                productDiv.innerHTML = `
+                    <div class="dropdown">
+                        <img src="https://d3snlw7xiuobl9.cloudfront.net/${product.location}.jpg" class="rounded" alt="Error" width="450" height="450">
+                        <div class="item-name">
+                            <div class="itemdesc">${product.name}</div>
+                            <div class="itemdesc">$${product.price.toFixed(2)} USD</div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(productDiv);
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching products:', error);
+        });
+}
+
+function loadProductsByType() {
+    const selectedType = document.getElementById('type-dropdown').value;
+
+    // Fetch products based on the selected type
+    fetch(`/rental/getAll?type=${selectedType}`)
+        .then(response => response.json())
+        .then(data => {
+            const container = document.getElementById('product-container');
+            container.innerHTML = ''; // Clear previous products
+
+            // Append products to container
+            data.content.forEach(product => {
+                const productDiv = document.createElement('div');
+                productDiv.className = 'col-md-3 item-frame';
+                productDiv.innerHTML = `
+                    <div class="dropdown">
+                        <img src="https://d3snlw7xiuobl9.cloudfront.net/${product.location}.jpg" class="rounded" alt="Error" width="450" height="450">
+                        <div class="item-name">
+                            <div class="itemdesc">${product.name}</div>
+                            <div class="itemdesc">$${product.price.toFixed(2)} USD</div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(productDiv);
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching products:', error);
+        });
+}
 // Event listener for DOM content loaded
 document.addEventListener('DOMContentLoaded', function() {
     // Other initialization code can go here
