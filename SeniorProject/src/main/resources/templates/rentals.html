@@ -56,7 +56,7 @@
                   </li>
                 </ul>
                 <!-- Update the form within the nav element -->
-                <form class="d-flex" onsubmit="searchProducts(event)">
+                <form class="d-flex" id="search-form">
                     <input class="form-control me-0" type="search" name="kw" placeholder="Search Products" aria-label="Search" list="product-list" autocomplete="off" id="product-search">
                     <button class="btn btn-outline-light item-search-btn" type="submit">Search</button>
                     
@@ -79,7 +79,7 @@
                 <!-- Product items will be dynamically inserted here -->
             </div>
             <div class="pagination-controls">
-                <button id="prev-button" onclick="loadPreviousPage()" disabled>Previous</button>
+                <button id="prev-button" onclick="loadPreviousPage()">Previous</button> <!-- Got rid of the disabled parameter -->
                 <button id="next-button" onclick="loadNextPage()">Next</button>
             </div>
         </div>
@@ -87,63 +87,49 @@
 
     <script>
         let currentPage = 0;
+        let currentTypePage = 0;
+        let currentSearchPage = 0; 
+        let isFiltered = false;
+        let isSearching = false;
         const pageSize = 12; // Number of products per page
 
         async function loadProducts(page, searchTerm = '') {
-    try {
-        const response = await fetch(`/rental/getAll?page=${page}&size=${pageSize}&kw=${encodeURIComponent(searchTerm)}`);
-        const data = await response.json();
+            isSearching = !!searchTerm;
+            try {
+                const response = await fetch(`/rental/getAll?page=${page}&size=${pageSize}&kw=${encodeURIComponent(searchTerm)}`);
+                const data = await response.json();
 
-        const container = document.getElementById('product-container');
-        container.innerHTML = ''; // Clear previous products
+                const container = document.getElementById('product-container');
+                container.innerHTML = ''; // Clear previous products
+                let searchCount = 0;
 
-        if (data.content && Array.isArray(data.content)) {
-            // Append products to container
-            data.content.forEach(product => {
-                const productDiv = document.createElement('div');
-                productDiv.className = 'col-md-3 item-frame';
-                productDiv.innerHTML = `
-                    <div class="dropdown">
-                        <img src="https://d3snlw7xiuobl9.cloudfront.net/${product.location}.jpg" class="rounded" alt="Error" width="450" height="450">
-                        <div class="item-name">
-                            <div class="itemdesc">${product.name}</div>
-                            <div class="itemdesc">$${product.price.toFixed(2)} USD</div>
-                        </div>
-                        <div class="dropdown-content">
-                            <button id="openModalButton" onclick="openModal()">
-                                <img src="https://d3snlw7xiuobl9.cloudfront.net/${product.location}.jpg" class="rounded" alt="Error" width="500" height="500">
-                            </button>
-                            <div class="product-info">
-                                <div class="itemdesc">${product.name}</div>
-                                <div class="itemdesc">${product.description}</div>
-                                <div class="itemdesc">$${product.price.toFixed(2)} USD</div>
-                                <div class="itemdesc">Quantity: ${product.quantity}</div>
-                                <div class="quantity-controls">
-                                    <button class="custom-btn rounded" onclick="decreaseQuantity(this)">-</button>
-                                    <input type="text" value="1">
-                                    <button class="custom-btn rounded" onclick="increaseQuantity(this)">+</button>
-                                    <button class="custom-cart rounded cart-button" onclick="addToCart('${product.name}', ${product.price.toFixed(2)}, this)">
-                                        <img src="picture/cart.png" alt="Cart Icon">
-                                    </button>
+                if (data.content && Array.isArray(data.content)) {
+                    // Append products to container
+                    data.content.forEach(product => {
+                        searchCount++;
+                        const productDiv = document.createElement('div');
+                        productDiv.className = 'col-md-3 item-frame';
+                        productDiv.innerHTML = `
+                            <div class="dropdown">
+                                <img src="https://d3snlw7xiuobl9.cloudfront.net/${product.location}.jpg" class="rounded" alt="Error" width="450" height="450">
+                                <div class="item-name">
+                                    <div class="itemdesc">${product.name}</div>
+                                    <div class="itemdesc">$${product.price.toFixed(2)} USD</div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                `;
-                container.appendChild(productDiv);
-            });
-        } else {
-            console.error("Data format error: expected data.content to be an array");
+                        `;
+                        container.appendChild(productDiv);
+                    });
+                    updatePaginationButtons(data);
+                } else {
+                    console.error("Data format error: expected data.content to be an array");
+                    updatePaginationButtons({ last: true });
+                }
+
+            } catch (error) {
+                console.error('Error fetching products:', error);
+            }
         }
-
-        // Enable/disable buttons based on the current page
-        document.getElementById('prev-button').disabled = (currentPage === 0);
-        document.getElementById('next-button').disabled = data.last;
-
-    } catch (error) {
-        console.error('Error fetching products:', error);
-    }
-}
 
 // Modify the event listener for form submission
 document.querySelector('form').addEventListener('submit', function(event) {
@@ -230,26 +216,26 @@ function addToCart(productName, productPrice, button) {
     }
 }
 
-async function searchProducts(event) {
+document.getElementById('search-form').addEventListener('submit', function(event) {
     event.preventDefault(); // Prevent the default form submission
+    searchProducts(event); // Call the search function
+});
 
+async function searchProducts(event) {
     const searchTerm = document.getElementById('product-search').value;
-    currentPage = 0; // Reset to the first page for search results
-    await loadProducts(currentPage, searchTerm); // Load products based on the search term
+    currentSearchPage = 0; // Reset to the first page for search results
+    await loadProducts(currentSearchPage, searchTerm); // Load products based on the search term
 }
 
-function searchByType() {
+async function loadProductsByType() {
     const selectedType = document.getElementById('type-dropdown').value;
-    const keyword = document.getElementById('product-search').value;
-    
-    // Make a fetch request to your server
-    fetch(`/rental/getAll?type=${selectedType}&kw=${keyword}`)
-        .then(response => response.json())
-        .then(data => {
-            // Handle displaying the data (update product container)
-            const container = document.getElementById('product-container');
-            container.innerHTML = ''; // Clear previous products
-
+    isFiltered = true;
+    try {
+        const response = await fetch(`/rental/getAll?page=${currentTypePage}&size=${pageSize}&type=${selectedType}`);
+        const data = await response.json();
+        const container = document.getElementById('product-container');
+        container.innerHTML = ''; // Clear previous products
+        if (data.content && Array.isArray(data.content)) {
             // Append products to container
             data.content.forEach(product => {
                 const productDiv = document.createElement('div');
@@ -265,61 +251,68 @@ function searchByType() {
                 `;
                 container.appendChild(productDiv);
             });
-        })
-        .catch(error => {
-            console.error('Error fetching products:', error);
-        });
+            updatePaginationButtons(data);
+        }
+    } catch (error) {
+        console.error('Error fetching products:', error);
+        updatePaginationButtons({ last: true });
+    }
+}
+// General next page function
+async function loadNextPage() {
+    if (isSearching) {
+        currentSearchPage++; // Increment search page
+        await loadProducts(currentSearchPage, document.getElementById('product-search').value); // Load search results
+    } else if (isFiltered) {
+        currentTypePage++; // Increment type page
+        await loadProductsByType(); // Load next type page
+    } else {
+        currentPage++; // Increment general page
+        await loadProducts(currentPage, ""); // Load next general page
+    }
 }
 
-function loadProductsByType() {
-    const selectedType = document.getElementById('type-dropdown').value;
-
-    // Fetch products based on the selected type
-    fetch(`/rental/getAll?type=${selectedType}`)
-        .then(response => response.json())
-        .then(data => {
-            const container = document.getElementById('product-container');
-            container.innerHTML = ''; // Clear previous products
-
-            // Append products to container
-            data.content.forEach(product => {
-                const productDiv = document.createElement('div');
-                productDiv.className = 'col-md-3 item-frame';
-                productDiv.innerHTML = `
-                    <div class="dropdown">
-                        <img src="https://d3snlw7xiuobl9.cloudfront.net/${product.location}.jpg" class="rounded" alt="Error" width="450" height="450">
-                        <div class="item-name">
-                            <div class="itemdesc">${product.name}</div>
-                            <div class="itemdesc">$${product.price.toFixed(2)} USD</div>
-                        </div>
-                    </div>
-                `;
-                container.appendChild(productDiv);
-            });
-        })
-        .catch(error => {
-            console.error('Error fetching products:', error);
-        });
+// General previous page function
+async function loadPreviousPage() {
+    if (isSearching) {
+        if (currentSearchPage > 0) {
+            currentSearchPage--; // Decrement search page
+            await loadProducts(currentSearchPage, document.getElementById('product-search').value); // Load search results
+        }
+    } else if (isFiltered) {
+        if (currentTypePage > 0) {
+            currentTypePage--; // Decrement type page
+            await loadProductsByType(); // Load previous type page
+        }
+    } else {
+        if (currentPage > 0) {
+            currentPage--; // Decrement general page
+            await loadProducts(currentPage, ""); // Load previous general page
+        }
+    }
 }
+
+// Update Pagination Buttons
+function updatePaginationButtons(data) {
+    let currentPageState;
+
+    if (isSearching) {
+        currentPageState = currentSearchPage; // Use search page
+    } else if (isFiltered) {
+        currentPageState = currentTypePage; // Use type filter page
+    } else {
+        currentPageState = currentPage; // Use general page
+    }
+    document.getElementById('prev-button').disabled = (currentPageState === 0);
+    document.getElementById('next-button').disabled = data.last; 
+}
+
 // Event listener for DOM content loaded
 document.addEventListener('DOMContentLoaded', function() {
     // Other initialization code can go here
+     // Initial load
+     loadProducts(currentPage);
 });
-
-        function loadNextPage() {
-            currentPage++;
-            loadProducts(currentPage);
-        }
-
-        function loadPreviousPage() {
-            if (currentPage > 0) {
-                currentPage--;
-                loadProducts(currentPage);
-            }
-        }
-
-        // Initial load
-        loadProducts(currentPage);
     </script>
 </body>
 </html>
