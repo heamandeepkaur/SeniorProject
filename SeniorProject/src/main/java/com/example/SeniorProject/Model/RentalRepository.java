@@ -20,5 +20,5 @@ public interface RentalRepository extends JpaRepository<Product, Integer> {
     Page<Product> findByTypeIgnoreCase(String type, Pageable pageable);
 
     // New search method
-    // Page<Product> findIgnoreCase(String keyword, String type, Pageable pageable);
+    Page<Product> findByNameContainingIgnoreCaseAndTypeIgnoreCase(String keyword, String type, Pageable pageable);
 }

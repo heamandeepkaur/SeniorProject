@@ -87,17 +87,13 @@
 
     <script>
         let currentPage = 0;
-        let currentTypePage = 0;
-        let currentSearchPage = 0; 
-        let isFiltered = false;
-        let isSearching = false;
         const pageSize = 12; // Number of products per page
 
-        async function loadProducts(page, searchTerm = '') {
-            isSearching = !!searchTerm;
+        async function loadProducts(page, searchTerm = '', selectedType = ''){
             try {
-                const response = await fetch(`/rental/getAll?page=${page}&size=${pageSize}&kw=${encodeURIComponent(searchTerm)}`);
-                const data = await response.json();
+                const response = 
+                    await fetch (`/rental/getAll?page=${page}&size=${pageSize}&kw=${encodeURIComponent(searchTerm)}&type=${encodeURIComponent(selectedType)}`);   
+                const data = await response.json(); 
 
                 const container = document.getElementById('product-container');
                 container.innerHTML = ''; // Clear previous products
@@ -223,15 +219,16 @@ document.getElementById('search-form').addEventListener('submit', function(event
 
 async function searchProducts(event) {
     const searchTerm = document.getElementById('product-search').value;
+    const selectedType = document.getElementById('type-dropdown').value;
     currentSearchPage = 0; // Reset to the first page for search results
-    await loadProducts(currentSearchPage, searchTerm); // Load products based on the search term
+    await loadProducts(currentSearchPage, searchTerm, selectedType); // Load products based on the search term
 }
 
 async function loadProductsByType() {
     const selectedType = document.getElementById('type-dropdown').value;
     isFiltered = true;
     try {
-        const response = await fetch(`/rental/getAll?page=${currentTypePage}&size=${pageSize}&type=${selectedType}`);
+        const response = await fetch(`/rental/getAll?page=${currentPage}&size=${pageSize}&type=${selectedType}`);
         const data = await response.json();
         const container = document.getElementById('product-container');
         container.innerHTML = ''; // Clear previous products
@@ -260,50 +257,25 @@ async function loadProductsByType() {
 }
 // General next page function
 async function loadNextPage() {
-    if (isSearching) {
-        currentSearchPage++; // Increment search page
-        await loadProducts(currentSearchPage, document.getElementById('product-search').value); // Load search results
-    } else if (isFiltered) {
-        currentTypePage++; // Increment type page
-        await loadProductsByType(); // Load next type page
-    } else {
-        currentPage++; // Increment general page
-        await loadProducts(currentPage, ""); // Load next general page
-    }
+    currentPage++; // Increment general page
+    const searchTerm = document.getElementById('product-search').value;
+    const selectedType = document.getElementById('type-dropdown').value;
+    await loadProducts(currentPage, searchTerm, selectedType);
 }
 
 // General previous page function
 async function loadPreviousPage() {
-    if (isSearching) {
-        if (currentSearchPage > 0) {
-            currentSearchPage--; // Decrement search page
-            await loadProducts(currentSearchPage, document.getElementById('product-search').value); // Load search results
-        }
-    } else if (isFiltered) {
-        if (currentTypePage > 0) {
-            currentTypePage--; // Decrement type page
-            await loadProductsByType(); // Load previous type page
-        }
-    } else {
-        if (currentPage > 0) {
-            currentPage--; // Decrement general page
-            await loadProducts(currentPage, ""); // Load previous general page
-        }
+    if (currentPage > 0) {
+        currentPage--; // Decrement general page
+        const searchTerm = document.getElementById('product-search').value;
+        const selectedType = document.getElementById('type-dropdown').value;
+        await loadProducts(currentPage, searchTerm, selectedType);
     }
 }
 
 // Update Pagination Buttons
 function updatePaginationButtons(data) {
-    let currentPageState;
-
-    if (isSearching) {
-        currentPageState = currentSearchPage; // Use search page
-    } else if (isFiltered) {
-        currentPageState = currentTypePage; // Use type filter page
-    } else {
-        currentPageState = currentPage; // Use general page
-    }
-    document.getElementById('prev-button').disabled = (currentPageState === 0);
+    document.getElementById('prev-button').disabled = (currentPage === 0);
     document.getElementById('next-button').disabled = data.last; 
 }
 

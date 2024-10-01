@@ -18,37 +18,24 @@ public class RentalController {
     private RentalRepository rentalRepository;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    @GetMapping(path="/getAll")
-public @ResponseBody Page<Product> getAllProducts(
-        @RequestParam(value = "kw", required = false) String keyword,
-        @RequestParam(value = "type", required = false) String type,
-        Pageable pageable) {
-    if (keyword != null && !keyword.isEmpty()) {
-        return rentalRepository.findByNameContainingIgnoreCase(keyword, pageable);
-    } else if (type != null && !type.isEmpty()) {
-        return rentalRepository.findByTypeIgnoreCase(type, pageable); // Custom method for searching by type
-    }
-    return rentalRepository.findAll(pageable);
-}
-
     // New search method that includes both type and regular search
-    // @GetMapping(path = "/getAll")
-    // public @ResponseBody Page<Product> getAllProducts(
-    //         @RequestParam(value = "kw", required = false) String keyword,
-    //         @RequestParam(value = "type", required = false) String type,
-    //         Pageable pageable) {
-    //     if (keyword != null && !keyword.isEmpty() && type != null && !type.isEmpty()) {
-    //         // Apply both keyword and type filters
-    //         return rentalRepository.findByNameContainingIgnoreCaseAndTypeIgnoreCase(keyword, type, pageable);
-    //     } else if (keyword != null && !keyword.isEmpty()) {
-    //         // Apply keyword filter only
-    //         return rentalRepository.findByNameContainingIgnoreCase(keyword, pageable);
-    //     } else if (type != null && !type.isEmpty()) {
-    //         // Apply type filter only
-    //         return rentalRepository.findByTypeIgnoreCase(type, pageable);
-    //     }
-    //     return rentalRepository.findAll(pageable);
-    // }
+    @GetMapping(path = "/getAll")
+    public @ResponseBody Page<Product> getAllProducts(
+            @RequestParam(value = "kw", required = false) String keyword,
+            @RequestParam(value = "type", required = false) String type,
+            Pageable pageable) {
+        if (keyword != null && !keyword.isEmpty() && type != null && !type.isEmpty()) {
+            // Apply both keyword and type filters
+            return rentalRepository.findByNameContainingIgnoreCaseAndTypeIgnoreCase(keyword, type, pageable);
+        } else if (keyword != null && !keyword.isEmpty()) {
+            // Apply keyword filter only
+            return rentalRepository.findByNameContainingIgnoreCase(keyword, pageable);
+        } else if (type != null && !type.isEmpty()) {
+            // Apply type filter only
+            return rentalRepository.findByTypeIgnoreCase(type, pageable);
+        }
+        return rentalRepository.findAll(pageable);
+    }
 
     // New search method
     @GetMapping(path = "/search")
