@@ -88,6 +88,13 @@ public class JwtService
                 .getBody();
     }
 
+    public long getExpirationTimeInSeconds(String token)
+    {
+        Date expirationDate = extractExpiration(token);
+        long expirationTimeInMillis = expirationDate.getTime() - System.currentTimeMillis();
+        return expirationTimeInMillis / 1000;
+    }
+
     private Key getSignInKey()
 	{
         byte[] keyBytes = Decoders.BASE64.decode(secreteKey);

@@ -5,27 +5,25 @@ import com.example.SeniorProject.DTOs.RegisterUserDTO;
 import com.example.SeniorProject.Exception.BadRequestException;
 import com.example.SeniorProject.LoginResponse;
 import com.example.SeniorProject.Model.Account;
-import com.example.SeniorProject.Service.AuthenticationService;
-import com.example.SeniorProject.Service.JwtService;
+import com.example.SeniorProject.Service.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.LockedException;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RequestMapping("/auth")
 @RestController
-public class AuthenticaitonController
+public class AuthenticationController
 {
 	private final JwtService jwtService;
 	private final AuthenticationService authenticationService;
+    private final JwtTokenBlacklistService jwtTokenBlacklistService;
 
-	public AuthenticaitonController(JwtService jwtService, AuthenticationService authenticationService)
+	public AuthenticationController(JwtService jwtService, AuthenticationService authenticationService, JwtTokenBlacklistService jwtTokenBlacklistService)
     {
         this.jwtService = jwtService;
         this.authenticationService = authenticationService;
+        this.jwtTokenBlacklistService = jwtTokenBlacklistService;
     }
 
     @PostMapping("/signup")
@@ -43,6 +41,7 @@ public class AuthenticaitonController
             Account authenticatedUser = authenticationService.authenticate(loginUserDTO);
             String jwtToken = jwtService.generateToken(authenticatedUser);
             LoginResponse loginResponse = new LoginResponse(authenticatedUser,jwtToken, jwtService.getExpirationTime());
+            jwtTokenBlacklistService.addTokenForUser(authenticatedUser.getUsername(), jwtToken, jwtService.getExpirationTimeInSeconds(jwtToken)); // Save the token for the user
             return ResponseEntity.ok(loginResponse);
         }
         catch (BadRequestException exception)
@@ -53,5 +52,25 @@ public class AuthenticaitonController
         {
             return ResponseEntity.status(HttpStatus.LOCKED).body("your account is id locked");
         }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(@RequestHeader() String token)
+    {
+        if(token == null || !token.startsWith("Bearer "))
+        {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid token format");
+        }
+        String jwtToken = token.substring(7);
+        long expirationTime = jwtService.getExpirationTime();
+        jwtTokenBlacklistService.blacklistToken(jwtToken, expirationTime);
+        return ResponseEntity.status(HttpStatus.OK).body("Your account has been successfully logged out.");
+    }
+
+    @PostMapping("/invalidate")
+    public ResponseEntity<?> invalidateTokens(@RequestBody String username)
+    {
+        jwtTokenBlacklistService.invalidateTokensForUser(username);
+        return ResponseEntity.ok().build();
     }
 }

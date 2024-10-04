@@ -1,8 +1,7 @@
 package com.example.SeniorProject.Controller;
 
 import com.example.SeniorProject.Email.*;
-import com.example.SeniorProject.Model.Account;
-import com.example.SeniorProject.Model.AccountRepository;
+import com.example.SeniorProject.Model.*;
 import com.example.SeniorProject.Service.EmailService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.*;
@@ -71,7 +70,7 @@ public class EmailController
             emailMap.put(token,email);
         }
 
-        String verificationUrl = "http://" + request.getServerName() + ":" + request.getServerPort()  + "/email/verify-email?token=" + token;
+        String verificationUrl = "https://" + request.getServerName() + ":" + request.getServerPort()  + "/email/verify-email?token=" + token;
 
         // Creating the email details
         EmailDetails details = new EmailDetails();
@@ -100,7 +99,7 @@ public class EmailController
                 + "Here is an important reminder for your rental pickup.\n"
                 + order.getCustomer().getFirstName() + " "
                 + order.getCustomer().getLastName() + " your Order, "
-                + order.getID() + " pickup is on, " + order.getDate();
+                + order.getId() + " pickup is on, " + order.getDate();
 
         //sending email
         CxEmailDetails.setMessageBody(emailBody);
@@ -119,7 +118,7 @@ public class EmailController
                 + "Below is important return information for your rental\n"
                 + order.getCustomer().getFirstName() + " "
                 + order.getCustomer().getLastName() + " your Order, "
-                + order.getID() + " return is on, " + order.getRentalTime();
+                + order.getId() + " return is on, " + order.getRentalTime();
 
         //sending email
         CxEmailDetails.setMessageBody(emailBody);
@@ -138,7 +137,7 @@ public class EmailController
         //filling the email body
         String emailBody = order.getCustomer().getFirstName() + " "
                 + order.getCustomer().getLastName() + " your Order, "
-                + order.getID() + " has been canceled for, " + CanceledReason
+                + order.getId() + " has been canceled for, " + CanceledReason
                 + "\n Please reach out to our service number for any questions.";
 
         //sending email

@@ -1,6 +1,6 @@
 package com.example.SeniorProject.Configuration;
 
-import com.example.SeniorProject.Service.JwtService;
+import com.example.SeniorProject.Service.*;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -21,12 +21,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter
 	private final HandlerExceptionResolver handlerExceptionResolver;
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
+    private final JwtTokenBlacklistService jwtTokenBlacklistService;
 
-    public JwtAuthenticationFilter(HandlerExceptionResolver handlerExceptionResolver, JwtService jwtService, UserDetailsService userDetailsService)
+    public JwtAuthenticationFilter(HandlerExceptionResolver handlerExceptionResolver, JwtService jwtService, UserDetailsService userDetailsService, JwtTokenBlacklistService jwtTokenBlacklistService)
     {
         this.handlerExceptionResolver = handlerExceptionResolver;
         this.jwtService = jwtService;
         this.userDetailsService = userDetailsService;
+        this.jwtTokenBlacklistService = jwtTokenBlacklistService;
     }
 
 	@Override
@@ -46,7 +48,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter
             if(userEmail != null && authentication == null)
             {
                 UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
-                if (jwtService.isTokenValid(jwt, userDetails))
+                if (jwtService.isTokenValid(jwt, userDetails) && !jwtTokenBlacklistService.isTokenBlacklisted(jwt))
                 {
                     UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                     authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
