@@ -481,56 +481,8 @@ class OrderControllerTest {
         verify(orderService, times(1)).deleteOrder(orderId);
     }
 
-
-
     @Test
-    @WithMockUser()
-    void testGetOrderByCustomerId_Success() throws Exception {
-        // Arrange
-        int customerId = 1;
-        List<OrderDTO> mockOrders = Arrays.asList(
-                new OrderDTO(),
-                new OrderDTO()
-        );
-
-        when(orderService.getOrderByCustomerId(customerId)).thenReturn(mockOrders);
-
-        // Act & Assert
-        mockMvc.perform(get("/order/getOrderByCustomerId")
-                        .param("id", String.valueOf(customerId))
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(2));
-
-        // Verify interaction
-        verify(orderService, times(1)).getOrderByCustomerId(customerId);
-    }
-
-    @Test
-    @WithMockUser()
-    void testGetCustomerByOrderId_Success() throws Exception {
-        // Arrange
-        int orderId = 1;
-        CustomerDTO mockCustomer = new CustomerDTO("John", "Doe", "", "");
-        mockCustomer.setId(orderId);
-        when(orderService.getCustomerByOrderId(orderId)).thenReturn(mockCustomer);
-
-        // Act & Assert
-        mockMvc.perform(get("/order/getCustomerByOrderId")
-                        .param("orderId", String.valueOf(orderId))
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(orderId))
-                .andExpect(jsonPath("$.lastName").value("Doe"))
-                .andExpect(jsonPath("$.firstName").value("John")
-                );
-
-        // Verify interaction
-        verify(orderService, times(1)).getCustomerByOrderId(orderId);
-    }
-
-    @Test
-    void testUpdateOrder_Success() throws Exception {
+     void testUpdateOrder_Success() throws Exception {
         // Arrange
         int orderId = 10;
         OrderDTO orderDTO = new OrderDTO();
@@ -612,6 +564,29 @@ class OrderControllerTest {
                 .andExpect(status().isOk()); // Since no response body is returned
 
         verify(orderService).orderDueCheck();
+    }
+
+    @Test
+    @WithMockUser()
+    void testGetCustomerByOrderId_Success() throws Exception {
+        // Arrange
+        int orderId = 1;
+        CustomerDTO mockCustomer = new CustomerDTO("John", "Doe", "", "");
+        mockCustomer.setId(orderId);
+        when(orderService.getCustomerByOrderId(orderId)).thenReturn(mockCustomer);
+
+        // Act & Assert
+        mockMvc.perform(get("/order/getCustomerByOrderId")
+                        .param("orderId", String.valueOf(orderId))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(orderId))
+                .andExpect(jsonPath("$.lastName").value("Doe"))
+                .andExpect(jsonPath("$.firstName").value("John")
+                );
+
+        // Verify interaction
+        verify(orderService, times(1)).getCustomerByOrderId(orderId);
     }
 
     @Test

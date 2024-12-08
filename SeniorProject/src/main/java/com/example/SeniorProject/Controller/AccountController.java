@@ -84,11 +84,11 @@ public class AccountController
     }
 
     @DeleteMapping("/deleteUnverifiedAccounts")
-    public ResponseEntity<?> deleteUnverifiedAccounts(@RequestBody List<Account> accounts)
+    public ResponseEntity<?> deleteUnverifiedAccounts()
     {
         try
         {
-            accountService.deleteAllUnverifiedAccounts(accounts);
+            accountService.deleteAllUnverifiedAccounts();
             return ResponseEntity.status(HttpStatus.OK).body("All unverified accounts have been successfully deleted.");
         }
         catch (ResponseStatusException exception)

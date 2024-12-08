@@ -83,8 +83,9 @@ public class AccountService
         return account;
     }
 
-    public void deleteAllUnverifiedAccounts(List<Account> accounts)
+    public void deleteAllUnverifiedAccounts()
     {
+        List<Account> accounts = accountRepository.findUnverifiedAccounts();
         if (accounts.isEmpty())
         {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No unverified accounts found");

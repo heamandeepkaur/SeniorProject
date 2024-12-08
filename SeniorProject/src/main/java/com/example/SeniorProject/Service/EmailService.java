@@ -29,7 +29,7 @@ public class EmailService
     private AccountRepository accountRepository;
 
     @Autowired
-    private S3Service s3Service;
+    private PdfService pdfService;
 
     @Value("${spring.mail.username}")
     private String sender;
@@ -114,7 +114,7 @@ public class EmailService
 
             // Attach the PDF file
             String fileName = "invoice_" + orderId + ".pdf";
-            File pdfFile = s3Service.downloadPdfFileFromS3Bucket(fileName);
+            File pdfFile = pdfService.downloadPDFFromCLoudFront(fileName);
             FileSystemResource fileResource = new FileSystemResource(pdfFile);
             mimeMessageHelper.addAttachment(fileResource.getFilename(), fileResource);
 
@@ -125,9 +125,6 @@ public class EmailService
         catch (MessagingException e)
         {
             e.printStackTrace();
-        } catch (IOException e)
-        {
-            throw new RuntimeException(e);
         }
     }
 

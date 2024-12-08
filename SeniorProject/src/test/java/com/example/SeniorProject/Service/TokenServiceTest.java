@@ -114,7 +114,7 @@ public class TokenServiceTest
         String token2 = tokenService.generateToken(email);
         assertNotNull(token1, "Token should not be null");
         assertNotNull(token2, "Token should not be null");
-        assertNotEquals(token1, token2, "Token should be the same");
+        assertNotEquals(token1, token2);
     }
 
     @Test

@@ -7,9 +7,12 @@ import org.apache.pdfbox.pdmodel.*;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Map;
 
@@ -222,6 +225,39 @@ public class PdfService
         catch (IOException e)
         {
             throw new RuntimeException("Error generating PDF", e);
+        }
+    }
+
+    public File downloadPDFFromCLoudFront(String fileName)
+    {
+        String url = "https://d3snlw7xiuobl9.cloudfront.net/" + fileName;
+        RestTemplate restTemplate = new RestTemplate();
+        ResponseEntity<byte[]> response = restTemplate.getForEntity(url, byte[].class);
+        if(response.getStatusCode().is2xxSuccessful())
+        {
+            byte[] pdfByte = response.getBody();
+            File tempFile = null;
+            try
+            {
+                tempFile = File.createTempFile("downloaded-", ".pdf");
+            }
+            catch (IOException e)
+            {
+                throw new RuntimeException(e);
+            }
+            try (FileOutputStream fos = new FileOutputStream(tempFile))
+            {
+                fos.write(pdfByte);
+                return tempFile;
+            }
+            catch (IOException e)
+            {
+                throw new RuntimeException(e);
+            }
+        }
+        else
+        {
+            throw new RuntimeException("Error downloading PDF");
         }
     }
 }

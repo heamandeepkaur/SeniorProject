@@ -183,7 +183,7 @@ class AccountServiceTest {
         when(accountRepository.findUnverifiedAccounts()).thenReturn(unverifiedAccounts);
 
         // Act
-        accountService.deleteAllUnverifiedAccounts(unverifiedAccounts);
+        accountService.deleteAllUnverifiedAccounts();
 
         // Assert
         verify(accountRepository, times(1)).deleteAll(unverifiedAccounts);
@@ -196,7 +196,7 @@ class AccountServiceTest {
 
         // Act & Assert
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
-            accountService.deleteAllUnverifiedAccounts(new ArrayList<>());
+            accountService.deleteAllUnverifiedAccounts();
         });
         assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
         assertEquals("No unverified accounts found", exception.getReason());
@@ -211,7 +211,7 @@ class AccountServiceTest {
 
         // Act & Assert
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
-            accountService.deleteAllUnverifiedAccounts(unverifiedAccounts);
+            accountService.deleteAllUnverifiedAccounts();
         });
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, exception.getStatusCode());
